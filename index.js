@@ -1,5 +1,6 @@
 var http = require("http");
 var fs = require("fs");
+var url=require("url");
 var replace = require("./replace.js");
 var data = JSON.parse(fs.readFileSync("./dev-data/data.json"));
 var tp = fs.readFileSync("./templates/template-product.html").toString();
@@ -11,8 +12,11 @@ var server = http.createServer(async function (req, res) {
     var makeCards = function (tc, data) {
         return replace(tc,data);
     }
-    var pathResolver = req.url;
-    if (pathResolver == "/" || pathResolver == "/overview") {
+    var path=req.url;
+    var id=url.parse(path,true).query.id;
+    // console.log(id);
+    var path=url.parse(path,true).pathname;
+    if (path == "/" || path == "/overview") {
         var cards = "";
         for (var i = 0; i < data.length; i++) {
             cards += makeCards(tc, data[i]);
@@ -21,15 +25,15 @@ var server = http.createServer(async function (req, res) {
         res.writeHead(200, { "content-type": "text/html" });
         res.end(overviewHtml);
     }
-    else if (pathResolver == "/products") {
-        var productHTML = replace(tp, data[0]);
+    else if(path=="/product"){
+          var productHTML = replace(tp, data[id]);
         res.writeHead(200, { "content-type": "text/html" });
         res.end(productHTML);
     }
-    else if (pathResolver == "/card") {
+    else if (path == "/card") {
         res.end("CARD PAGE");
     }
-    else if (pathResolver == "/api") {
+    else if (path == "/api") {
         await fs.readFile("./data.json", function (err, data) {
             res.end(data);
         });
